@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bussola — Orientamento alla scelta universitaria</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --ink: #20242b;
+    --soft: #5b6270;
+    --paper: #f6f4ef;
+    --card: #fffefb;
+    --line: #ddd8cc;
+    --accent: #2f6f5e;     /* verde calmo */
+    --accent-soft: #e4ede9;
+    --warm: #c2734a;       /* terracotta — accenti */
+    --sky: #4a6d8c;
+    --shadow: rgba(32,36,43,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Newsreader', Georgia, serif;
+    line-height: 1.6;
+    padding: 44px 18px 80px;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 700px; margin: 0 auto; }
+
+  /* Safari iOS: rende affidabile il tocco su elementi interattivi */
+  .btn, .lk, .choice, .so, .lk *, .choice * {
+    -webkit-tap-highlight-color: rgba(47,111,94,0.15);
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+
+  /* ---------- header ---------- */
+  header { margin-bottom: 30px; }
+  .kicker {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px; font-weight: 500;
+  }
+  h1 {
+    font-size: clamp(32px, 6vw, 50px); font-weight: 600;
+    line-height: 1.06; letter-spacing: -0.02em;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  .intro {
+    margin-top: 18px; font-size: 17px; color: var(--soft); max-width: 54ch;
+  }
+  .reassure {
+    margin-top: 20px; padding: 16px 18px;
+    background: var(--accent-soft); border-radius: 10px;
+    font-size: 14.5px; color: #2c4a42; line-height: 1.55;
+  }
+  .reassure strong { font-weight: 600; }
+
+  /* ---------- intro card ---------- */
+  .start-card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 28px 26px; margin-top: 26px;
+    box-shadow: 0 4px 18px var(--shadow);
+  }
+  .start-card h2 { font-size: 21px; font-weight: 600; margin-bottom: 10px; }
+  .start-card p { font-size: 15px; color: var(--soft); margin-bottom: 8px; }
+  .steps { font-family:'IBM Plex Sans',sans-serif; font-size:13.5px; color:var(--soft); margin: 14px 0 4px; }
+  .steps span { color: var(--accent); font-weight:600; }
+
+  /* ---------- progress ---------- */
+  .topbar {
+    position: sticky; top: 10px; z-index: 30;
+    background: var(--paper); padding: 8px 0 12px; margin-bottom: 20px;
+  }
+  .pwrap { display:flex; align-items:center; gap:12px; }
+  .ptrack {
+    flex:1; height: 8px; background: var(--card);
+    border:1px solid var(--line); border-radius: 99px; overflow:hidden;
+  }
+  .pfill { height:100%; width:0%; background: var(--accent);
+    transition: width .4s cubic-bezier(.4,0,.2,1); }
+  .plabel { font-family:'IBM Plex Sans',sans-serif; font-size:12px;
+    color:var(--soft); white-space:nowrap; }
+
+  /* ---------- sections ---------- */
+  .section-tag {
+    font-family:'IBM Plex Sans',sans-serif; font-size:12px;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--warm);
+    font-weight:600; margin: 8px 0 16px;
+  }
+  .q-card {
+    background: var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:22px 22px; margin-bottom:18px;
+  }
+  .q-text { font-size:17.5px; font-weight:500; margin-bottom:4px; }
+  .q-sub { font-family:'IBM Plex Sans',sans-serif; font-size:12.5px;
+    color:var(--soft); margin-bottom:16px; }
+
+  /* likert */
+  .likert { display:flex; gap:8px; }
+  .lk {
+    flex:1; text-align:center; padding:12px 4px;
+    border:1px solid var(--line); border-radius:9px;
+    cursor:pointer; transition:all .15s ease;
+    font-family:'IBM Plex Sans',sans-serif;
+  }
+  .lk:hover { border-color:var(--accent); }
+  .lk.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .lk .dot {
+    display:block; width:auto; font-size:18px; font-weight:600; margin-bottom:3px;
+  }
+  .lk .lab { font-size:10.5px; line-height:1.25; opacity:.8; }
+
+  /* choice (multi / single) */
+  .choices { display:flex; flex-wrap:wrap; gap:9px; }
+  .choice {
+    padding:11px 16px; border:1px solid var(--line); border-radius:99px;
+    cursor:pointer; transition:all .15s ease;
+    font-family:'IBM Plex Sans',sans-serif; font-size:14px;
+  }
+  .choice:hover { border-color:var(--accent); }
+  .choice.sel { background:var(--ink); border-color:var(--ink); color:#fff; }
+  .pick-hint { font-family:'IBM Plex Sans',sans-serif; font-size:12px;
+    color:var(--soft); margin-bottom:12px; }
+
+  /* slider style for context */
+  .scale-row { margin-bottom:20px; }
+  .scale-poles {
+    display:flex; justify-content:space-between;
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px;
+    color:var(--soft); margin-bottom:8px;
+  }
+  .scale-opts { display:flex; gap:6px; }
+  .so {
+    flex:1; height:34px; border:1px solid var(--line); border-radius:7px;
+    cursor:pointer; transition:all .15s ease;
+  }
+  .so:hover { border-color:var(--sky); }
+  .so.sel { background:var(--sky); border-color:var(--sky); }
+
+  /* button */
+  .btn {
+    font-family:'IBM Plex Sans',sans-serif; font-weight:500;
+    font-size:15px; padding:17px 28px; width:100%;
+    background:var(--accent); color:#fff; border:none;
+    border-radius:11px; cursor:pointer; transition:all .15s ease;
+    margin-top:10px;
+  }
+  .btn:hover:not(:disabled) { background:#26594b; }
+  .btn:disabled { background:var(--line); color:#9a958a; cursor:not-allowed; }
+  .btn.ghost {
+    background:none; border:1px solid var(--line); color:var(--ink);
+    margin-top:14px;
+  }
+  .btn.ghost:hover { background:var(--ink); color:#fff; }
+
+  /* ---------- screens ---------- */
+  .screen { display:none; }
+  .screen.active { display:block; animation:fade .4s ease; }
+  @keyframes fade { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+  /* ---------- results ---------- */
+  .res-hero {
+    background: var(--ink); color:var(--paper);
+    border-radius:14px; padding:30px 26px; margin-bottom:22px;
+  }
+  .res-hero .kicker { color:#9fc7bb; }
+  .res-hero h2 { font-size:27px; font-weight:600; line-height:1.15; margin-bottom:8px; }
+  .res-hero h2 em { font-style:italic; color:#9fc7bb; }
+  .res-hero p { font-size:15px; color:#c7c9ca; }
+
+  .profile-bars { margin-bottom:24px; }
+  .pb-row { display:flex; align-items:center; gap:12px; margin-bottom:9px;
+    font-family:'IBM Plex Sans',sans-serif; }
+  .pb-name { width:128px; flex-shrink:0; font-size:13px; }
+  .pb-name small { display:block; color:var(--soft); font-size:11px; }
+  .pb-track { flex:1; height:22px; background:var(--card);
+    border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .pb-fill { height:100%; background:var(--accent);
+    transition:width .9s cubic-bezier(.34,1.1,.64,1); border-radius:5px 0 0 5px; }
+  .pb-pct { width:34px; text-align:right; font-size:12px; font-weight:600; }
+
+  .block {
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:24px 22px; margin-bottom:18px;
+  }
+  .block h3 {
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--warm);
+    font-weight:600; margin-bottom:14px;
+  }
+  .path {
+    border-left:3px solid var(--accent); padding:4px 0 4px 16px;
+    margin-bottom:18px;
+  }
+  .path:last-child { margin-bottom:0; }
+  .path h4 { font-size:18px; font-weight:600; margin-bottom:3px; }
+  .path .deg {
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px;
+    color:var(--soft); margin-bottom:8px;
+  }
+  .path .desc { font-size:15px; margin-bottom:10px; }
+
+  .jobs { font-family:'IBM Plex Sans',sans-serif; font-size:13px;
+    color:var(--soft); margin-bottom:10px; }
+  .jobs strong { color:var(--ink); }
+
+  /* trend chip */
+  .trend {
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--paper); border-radius:8px; padding:11px 13px;
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px; line-height:1.5;
+  }
+  .trend .ico {
+    flex-shrink:0; width:24px; height:24px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; color:#fff;
+  }
+  .t-up .ico { background:var(--accent); }
+  .t-mix .ico { background:var(--warm); }
+  .t-press .ico { background:var(--sky); }
+  .trend .tx strong { display:block; margin-bottom:1px; color:var(--ink); }
+
+  .niche-note {
+    background:#fdf6ee; border:1px solid #e8d4bd; border-radius:9px;
+    padding:13px 15px; margin-top:10px;
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px; color:#7a5734;
+  }
+
+  .perspective {
+    background:var(--accent-soft); border-radius:12px;
+    padding:22px 22px; margin-bottom:18px;
+  }
+  .perspective h3 { color:var(--accent); }
+  .perspective p { font-size:15px; margin-bottom:10px; }
+  .perspective p:last-child { margin-bottom:0; }
+
+  .closing {
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px;
+    color:var(--soft); line-height:1.65; margin-top:20px;
+    padding-top:18px; border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <div class="screen active" id="intro">
+    <header>
+      <div class="kicker">Strumento di orientamento · scuole superiori</div>
+      <h1>Una <em>bussola</em>, non una mappa già scritta</h1>
+      <p class="intro">Questo questionario ti aiuta a mettere a fuoco le tue inclinazioni e a vedere quali percorsi universitari ci si avvicinano — insieme a uno sguardo su come potrebbero evolvere gli sbocchi nel tempo.</p>
+      <div class="reassure">
+        <strong>Da leggere prima di iniziare.</strong> Questo non è un test che decide al posto tuo, e non esiste una risposta giusta o sbagliata. È un punto di partenza per riflettere. Le inclinazioni si scoprono anche vivendo, e un percorso di studi non è un binario obbligato verso un solo mestiere: apre competenze che si possono ricombinare in molti modi. Prenditi il risultato come uno spunto da discutere — con chi ti orienta, con la famiglia, con te stesso.
+      </div>
+    </header>
+    <div class="start-card">
+      <h2>Come funziona</h2>
+      <p>Tre parti brevi, circa 8–10 minuti in tutto. Rispondi di pancia: la prima reazione è di solito la più sincera.</p>
+      <div class="steps">
+        <span>1.</span> Cosa ti attrae &nbsp;·&nbsp; <span>2.</span> Le materie che senti tue &nbsp;·&nbsp; <span>3.</span> Come ti immagini al lavoro
+      </div>
+      <button class="btn" id="bStart">Inizia il percorso →</button>
+    </div>
+  </div>
+
+  <!-- ============ SECTION 1 — RIASEC ============ -->
+  <div class="screen" id="s1">
+    <div class="topbar"><div class="pwrap">
+      <div class="ptrack"><div class="pfill" id="pf1" style="width:8%"></div></div>
+      <div class="plabel">Parte 1 di 3</div>
+    </div></div>
+    <div class="section-tag">Parte 1 — Cosa ti attrae</div>
+    <h1 style="font-size:26px;margin-bottom:6px;">Quanto ti somigliano queste cose?</h1>
+    <p class="intro" style="font-size:15px;margin-bottom:18px;">Non pensare a se "sei bravo" o se "conviene": pensa solo a quanto ti attrae l'idea.</p>
+    <div id="riasecQs"></div>
+    <button class="btn" id="b1" disabled>Continua →</button>
+  </div>
+
+  <!-- ============ SECTION 2 — MATERIE ============ -->
+  <div class="screen" id="s2">
+    <div class="topbar"><div class="pwrap">
+      <div class="ptrack"><div class="pfill" id="pf2" style="width:55%"></div></div>
+      <div class="plabel">Parte 2 di 3</div>
+    </div></div>
+    <div class="section-tag">Parte 2 — Le materie che senti tue</div>
+    <h1 style="font-size:26px;margin-bottom:6px;">Dove ti trovi a tuo agio?</h1>
+    <p class="intro" style="font-size:15px;margin-bottom:8px;">Scegli le aree in cui studiare ti pesa meno — anche se i voti non sono sempre altissimi. Conta la naturalezza, non la performance.</p>
+    <div class="q-card">
+      <div class="q-text">Le aree che senti più tue</div>
+      <div class="q-sub">Scegline da 2 a 4</div>
+      <div class="choices" id="subjChoices"></div>
+    </div>
+    <button class="btn" id="b2" disabled>Continua →</button>
+  </div>
+
+  <!-- ============ SECTION 3 — CONTESTO ============ -->
+  <div class="screen" id="s3">
+    <div class="topbar"><div class="pwrap">
+      <div class="ptrack"><div class="pfill" id="pf3" style="width:85%"></div></div>
+      <div class="plabel">Parte 3 di 3</div>
+    </div></div>
+    <div class="section-tag">Parte 3 — Come ti immagini al lavoro</div>
+    <h1 style="font-size:26px;margin-bottom:6px;">In che ambiente stai bene?</h1>
+    <p class="intro" style="font-size:15px;margin-bottom:18px;">Per ogni coppia, scegli il punto della scala che ti rappresenta. Se sei nel mezzo, va bene il centro.</p>
+    <div class="q-card" id="ctxQs"></div>
+    <button class="btn" id="b3" disabled>Vedi il mio profilo →</button>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div class="screen" id="results"></div>
+
+</div>
+
+<script>
+/* ============================================================
+   MODELLO DATI
+   ============================================================ */
+
+/* --- Parte 1: item RIASEC (2 item per tipo, 12 totali) --- */
+const RIASEC = [
+  { t:"Smontare, costruire o riparare oggetti con le mani", k:"R" },
+  { t:"Lavorare all'aperto, con strumenti, macchine o materiali concreti", k:"R" },
+  { t:"Capire come funzionano le cose, indagare un problema a fondo", k:"I" },
+  { t:"Fare esperimenti, analizzare dati, cercare spiegazioni", k:"I" },
+  { t:"Creare qualcosa di originale: scrivere, disegnare, comporre, progettare", k:"A" },
+  { t:"Esprimerti in modo personale, senza regole troppo rigide", k:"A" },
+  { t:"Aiutare, ascoltare, insegnare o prenderti cura degli altri", k:"S" },
+  { t:"Lavorare in mezzo alle persone e fare la differenza per loro", k:"S" },
+  { t:"Convincere, guidare un gruppo, far partire un progetto o un'impresa", k:"E" },
+  { t:"Metterti in gioco, assumerti responsabilità, puntare a un risultato", k:"E" },
+  { t:"Organizzare, ordinare, gestire dati e procedure con precisione", k:"C" },
+  { t:"Lavorare con metodo, dentro regole chiare e ben definite", k:"C" }
+];
+const RIASEC_NAMES = {
+  R:["Pratico","mani, tecnica, concretezza"],
+  I:["Investigativo","ricerca, analisi, idee"],
+  A:["Creativo","espressione, originalità"],
+  S:["Relazionale","persone, cura, aiuto"],
+  E:["Intraprendente","leadership, iniziativa"],
+  C:["Organizzativo","metodo, ordine, precisione"]
+};
+
+/* --- Parte 2: aree disciplinari, ognuna pesa su tipi RIASEC --- */
+const SUBJECTS = [
+  { id:"mat", lab:"Matematica e fisica",        w:{I:2,R:1,C:1} },
+  { id:"bio", lab:"Biologia e scienze naturali",w:{I:2,S:1,R:1} },
+  { id:"let", lab:"Lettere e lingue",           w:{A:2,S:1,I:1} },
+  { id:"sto", lab:"Storia e filosofia",         w:{I:2,A:1,S:1} },
+  { id:"art", lab:"Arte e design",              w:{A:3,R:1} },
+  { id:"eco", lab:"Economia e diritto",         w:{E:2,C:2,I:1} },
+  { id:"inf", lab:"Informatica e tecnologia",   w:{I:2,R:1,C:1} },
+  { id:"soc", lab:"Scienze umane e sociali",    w:{S:3,I:1} },
+  { id:"spo", lab:"Sport e attività fisica",    w:{R:2,S:1,E:1} },
+  { id:"com", lab:"Comunicazione e media",      w:{A:2,E:2,S:1} }
+];
+
+/* --- Parte 3: assi di contesto --- */
+const CONTEXT = [
+  { id:"team",  left:"Da solo, in autonomia", right:"In squadra, con altri" },
+  { id:"struct",left:"Con regole e struttura chiare", right:"Con libertà e spazio di manovra" },
+  { id:"field", left:"In ufficio / al chiuso", right:"Sul campo / in movimento" },
+  { id:"pace",  left:"Ritmo stabile e prevedibile", right:"Ritmo dinamico, sempre nuovo" }
+];
+
+/* ============================================================
+   PERCORSI — ogni percorso ha un profilo RIASEC atteso,
+   sbocchi e una lettura di trend (qualitativa, non predittiva)
+   ============================================================ */
+const PATHS = [
+  {
+    name:"Area scientifico-tecnologica e ingegneristica",
+    deg:"Ingegneria · Fisica · Informatica · Scienze dei dati · ITS tecnologici",
+    riasec:["I","R","C"],
+    desc:"Percorsi che uniscono rigore analitico e applicazione concreta: progettare, modellare, costruire sistemi e risolvere problemi tecnici.",
+    jobs:"Ingegnere, sviluppatore software, data analyst, progettista, ruoli tecnici in industria ed energia.",
+    trend:{ type:"t-up", title:"Domanda strutturalmente in crescita",
+      txt:"Digitalizzazione, transizione energetica e automazione spingono questa area da anni. Sguardo prospettico solido: anche le professioni tecniche cambiano forma con l'AI, ma la capacità di progettare e capire i sistemi resta richiesta." }
+  },
+  {
+    name:"Area sanitaria e delle scienze della vita",
+    deg:"Medicina · Professioni sanitarie · Biotecnologie · Biologia · Farmacia",
+    riasec:["I","S","R"],
+    desc:"Percorsi che combinano metodo scientifico e relazione di cura: comprendere il corpo, la salute, la vita, e intervenire su di essi.",
+    jobs:"Medico, infermiere, fisioterapista, biotecnologo, ricercatore biomedico, farmacista.",
+    trend:{ type:"t-up", title:"Domanda in crescita, sostenuta dalla demografia",
+      txt:"L'invecchiamento della popolazione rende la cura e la salute un bisogno strutturale e crescente. È tra le aree meno esposte all'automazione, perché la relazione di cura è difficile da sostituire." }
+  },
+  {
+    name:"Area economico-giuridica e gestionale",
+    deg:"Economia · Giurisprudenza · Management · Scienze politiche",
+    riasec:["E","C","I"],
+    desc:"Percorsi che danno strumenti per capire organizzazioni, mercati, regole e decisioni — e per muoversi tra di essi.",
+    jobs:"Consulente, manager, analista finanziario, avvocato, ruoli in azienda e nelle istituzioni.",
+    trend:{ type:"t-mix", title:"Quadro misto: dipende molto da come si declina",
+      txt:"È un'area ampia: alcune mansioni ripetitive (parte dell'analisi, della contabilità, della pratica legale standard) sono sotto pressione da automazione e AI; i ruoli di giudizio, strategia, negoziazione e relazione restano invece molto richiesti. È un percorso che apre molte direzioni — non a caso non porta a un solo mestiere." }
+  },
+  {
+    name:"Area umanistica, linguistica e della comunicazione",
+    deg:"Lettere · Lingue · Filosofia · Comunicazione · Scienze della formazione",
+    riasec:["A","S","I"],
+    desc:"Percorsi che allenano pensiero critico, capacità di interpretare, scrivere, comunicare e dare senso alla complessità.",
+    jobs:"Comunicatore, insegnante, editor, traduttore, ruoli culturali, marketing e contenuti.",
+    trend:{ type:"t-mix", title:"In trasformazione: il valore si sposta",
+      txt:"Alcuni sbocchi tradizionali si sono ristretti, ma le competenze umanistiche — capire le persone, comunicare bene, pensare in modo critico — sono sempre più richieste proprio accanto alla tecnologia. La prospettiva migliora molto quando si combinano con competenze digitali." }
+  },
+  {
+    name:"Area artistica, del design e creativa",
+    deg:"Design · Architettura · Belle Arti · Discipline dello spettacolo",
+    riasec:["A","R","E"],
+    desc:"Percorsi in cui l'espressione personale diventa progetto: dare forma a spazi, immagini, oggetti, esperienze.",
+    jobs:"Designer, architetto, art director, professioni creative e progettuali.",
+    trend:{ type:"t-mix", title:"Settore dinamico, ma competitivo",
+      txt:"La creatività progettuale resta un valore difficile da automatizzare, ma è un'area con forte concorrenza. Gli strumenti AI stanno cambiando il mestiere: chi li padroneggia come strumento, anziché temerli, parte avvantaggiato. La qualità del portfolio conta spesso più del titolo." }
+  },
+  {
+    name:"Area sociale, educativa e dei servizi alla persona",
+    deg:"Scienze sociali · Psicologia · Servizio sociale · Scienze dell'educazione",
+    riasec:["S","I","A"],
+    desc:"Percorsi orientati a capire e sostenere le persone, i gruppi e le comunità: educazione, benessere, inclusione.",
+    jobs:"Educatore, psicologo, assistente sociale, ruoli nel terzo settore e nei servizi.",
+    trend:{ type:"t-up", title:"Bisogno sociale in crescita",
+      txt:"Benessere psicologico, educazione e fragilità sociale sono temi sempre più centrali. È un'area poco esposta all'automazione perché fondata sulla relazione umana; va però considerato che alcuni sbocchi pubblici dipendono dalle risorse disponibili." }
+  }
+];
+
+/* ============================================================
+   STATO + RENDER
+   ============================================================ */
+const state = { riasec:{}, subjects:[], context:{} };
+
+/* --- render Parte 1 --- */
+const rq = document.getElementById('riasecQs');
+RIASEC.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'q-card';
+  card.innerHTML = `
+    <div class="q-text">${item.t}</div>
+    <div class="likert" id="lk-${i}"></div>`;
+  rq.appendChild(card);
+  const box = card.querySelector(`#lk-${i}`);
+  const labels = ["Per niente","Poco","Così così","Abbastanza","Moltissimo"];
+  labels.forEach((lab, v) => {
+    const el = document.createElement('div');
+    el.className = 'lk';
+    el.innerHTML = `<span class="dot">${v+1}</span><span class="lab">${lab}</span>`;
+    el.onclick = () => {
+      state.riasec[i] = { k:item.k, v:v+1 };
+      [...box.children].forEach((c,ci)=>c.classList.toggle('sel', ci===v));
+      checkP1();
+    };
+    box.appendChild(el);
+  });
+});
+function checkP1(){
+  const done = Object.keys(state.riasec).length;
+  document.getElementById('pf1').style.width = (8 + done/RIASEC.length*44) + '%';
+  document.getElementById('b1').disabled = done < RIASEC.length;
+}
+
+/* --- render Parte 2 --- */
+const sc = document.getElementById('subjChoices');
+SUBJECTS.forEach(s => {
+  const el = document.createElement('div');
+  el.className = 'choice';
+  el.textContent = s.lab;
+  el.onclick = () => {
+    const idx = state.subjects.indexOf(s.id);
+    if (idx > -1) state.subjects.splice(idx,1);
+    else { if (state.subjects.length >= 4) return; state.subjects.push(s.id); }
+    el.classList.toggle('sel');
+    document.getElementById('b2').disabled = state.subjects.length < 2;
+  };
+  sc.appendChild(el);
+});
+
+/* --- render Parte 3 --- */
+const cq = document.getElementById('ctxQs');
+CONTEXT.forEach((c, ci) => {
+  const row = document.createElement('div');
+  row.className = 'scale-row';
+  row.innerHTML = `
+    <div class="scale-poles"><span>${c.left}</span><span>${c.right}</span></div>
+    <div class="scale-opts" id="sc-${c.id}"></div>`;
+  cq.appendChild(row);
+  const box = row.querySelector(`#sc-${c.id}`);
+  for (let v=0; v<5; v++){
+    const el = document.createElement('div');
+    el.className = 'so';
+    el.onclick = () => {
+      state.context[c.id] = v; // 0..4
+      [...box.children].forEach((x,xi)=>x.classList.toggle('sel', xi===v));
+      document.getElementById('b3').disabled =
+        Object.keys(state.context).length < CONTEXT.length;
+    };
+    box.appendChild(el);
+  }
+});
+
+/* --- navigazione --- */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* helper: aggancia un'azione a un pulsante in modo affidabile anche su Safari iOS */
+function bindTap(id, fn){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('click', function(e){
+    if (el.disabled) return;
+    e.preventDefault();
+    fn();
+  });
+}
+
+/* listener dei pulsanti di navigazione */
+bindTap('bStart', () => go('s1'));
+bindTap('b1',     () => go('s2'));
+bindTap('b2',     () => go('s3'));
+bindTap('b3',     () => finish());
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function finish(){
+  // 1) punteggi RIASEC dalla Parte 1
+  const score = {R:0,I:0,A:0,S:0,E:0,C:0};
+  const maxPer = {R:0,I:0,A:0,S:0,E:0,C:0};
+  Object.values(state.riasec).forEach(r => {
+    score[r.k] += r.v; maxPer[r.k] += 5;
+  });
+  // 2) contributo materie
+  state.subjects.forEach(id => {
+    const subj = SUBJECTS.find(s=>s.id===id);
+    for (const k in subj.w){ score[k] += subj.w[k]; maxPer[k] += subj.w[k]; }
+  });
+  // normalizza 0..100
+  const pct = {};
+  for (const k in score) pct[k] = Math.round(score[k] / maxPer[k] * 100);
+
+  // ordina tipi
+  const ranked = Object.keys(pct).sort((a,b)=>pct[b]-pct[a]);
+  const top3 = ranked.slice(0,3);
+
+  // 3) match percorsi: quanti dei top-3 RIASEC compaiono nel profilo del percorso
+  const scoredPaths = PATHS.map(p => {
+    let m = 0;
+    p.riasec.forEach((k,i) => {
+      if (top3.includes(k)) m += (3 - top3.indexOf(k)); // peso per ranking
+    });
+    return { ...p, match:m };
+  }).sort((a,b)=>b.match-a.match);
+
+  // niche detection: top2 RIASEC molto staccati dal resto + forte concentrazione materie
+  const spread = pct[ranked[0]] - pct[ranked[2]];
+  const isNiche = spread >= 38 && state.subjects.length <= 2;
+
+  renderResults(pct, ranked, top3, scoredPaths, isNiche);
+}
+
+function renderResults(pct, ranked, top3, paths, isNiche){
+  const top = paths.slice(0,3).filter(p=>p.match>0);
+  const list = top.length ? top : paths.slice(0,2);
+
+  const t1 = RIASEC_NAMES[top3[0]][0].toLowerCase();
+  const t2 = RIASEC_NAMES[top3[1]][0].toLowerCase();
+
+  // barre profilo
+  const bars = ranked.map(k => `
+    <div class="pb-row">
+      <div class="pb-name">${RIASEC_NAMES[k][0]}<small>${RIASEC_NAMES[k][1]}</small></div>
+      <div class="pb-track"><div class="pb-fill" style="width:0%" data-w="${pct[k]}"></div></div>
+      <div class="pb-pct">${pct[k]}</div>
+    </div>`).join('');
+
+  // percorsi
+  const pathHtml = list.map(p => `
+    <div class="path">
+      <h4>${p.name}</h4>
+      <div class="deg">${p.deg}</div>
+      <div class="desc">${p.desc}</div>
+      <div class="jobs"><strong>Dove può portare:</strong> ${p.jobs}</div>
+      <div class="trend ${p.trend.type}">
+        <div class="ico">${p.trend.type==='t-up'?'↑':p.trend.type==='t-press'?'↓':'≈'}</div>
+        <div class="tx"><strong>${p.trend.title}</strong>${p.trend.txt}</div>
+      </div>
+    </div>`).join('');
+
+  const nicheHtml = isNiche ? `
+    <div class="niche-note">
+      <strong>Una nota in più.</strong> Il tuo profilo è molto concentrato su poche aree:
+      questo può indicare una vocazione precisa. Se ti orienti verso percorsi molto
+      specialistici (per esempio certi indirizzi di ricerca, discipline artistiche di
+      nicchia o ambiti molto verticali), tieni presente che a volte le sedi di qualità
+      sono poche — in Italia e nel mondo. In quel caso vale la pena informarsi presto
+      sulle università di riferimento, sui requisiti di ammissione e sull'eventualità
+      di studiare all'estero. Una scelta verticale non è un rischio: va solo preparata
+      con più anticipo.
+    </div>` : '';
+
+  document.getElementById('results').innerHTML = `
+    <div class="res-hero">
+      <div class="kicker">Il tuo profilo</div>
+      <h2>Spicca un'inclinazione <em>${t1}</em>,<br>seguita da una componente <em>${t2}</em></h2>
+      <p>Qui sotto trovi il tuo profilo completo, i percorsi che gli si avvicinano e uno sguardo prospettico sugli sbocchi. Ricorda: è una fotografia di adesso, fatta per farti riflettere.</p>
+    </div>
+
+    <div class="block">
+      <h3>Le tue inclinazioni, in ordine</h3>
+      <div class="profile-bars">${bars}</div>
+      <div class="jobs" style="margin:0;">Le barre più alte indicano dove, oggi, ti senti più attratto e a tuo agio. Le differenze piccole tra una barra e l'altra significano che sei flessibile su quelle dimensioni — non che "non hai un profilo".</div>
+    </div>
+
+    <div class="block">
+      <h3>I percorsi che ti somigliano di più</h3>
+      ${pathHtml}
+      ${nicheHtml}
+    </div>
+
+    <div class="perspective">
+      <h3>Come leggere la parte "futuro"</h3>
+      <p>Le etichette sui trend (<strong>↑ in crescita</strong>, <strong>≈ in trasformazione</strong>, <strong>↓ sotto pressione</strong>) non sono previsioni: sono lo stato attuale di alcune dinamiche di fondo — l'automazione, l'invecchiamento della popolazione, la transizione digitale ed energetica. Servono a farti fare domande migliori, non a scegliere al posto tuo.</p>
+      <p>E soprattutto: il legame tra cosa studi e cosa farai non è mai automatico. Si può studiare diritto e non fare l'avvocato, studiare fisica e finire a occuparsi di tutt'altro. Un percorso di studi è soprattutto un modo di allenare la mente — le competenze che sviluppi ti seguono e si ricombinano lungo tutta la vita.</p>
+    </div>
+
+    <div class="perspective" style="background:#eef1f4;">
+      <h3 style="color:var(--sky)">Tre passi concreti da qui</h3>
+      <p><strong>1. Verifica sul campo.</strong> Cerca testimonianze, open day, video di chi fa quei lavori o frequenta quei corsi. La realtà di un percorso è spesso diversa da come la si immagina.</p>
+      <p><strong>2. Parla con persone vere.</strong> Un orientatore scolastico, qualcuno che fa il lavoro che ti incuriosisce, studenti già all'università. Le loro storie valgono più di qualsiasi test.</p>
+      <p><strong>3. Tieni aperte un paio di strade.</strong> Non serve avere una sola risposta a 18 anni. Restringere a due o tre direzioni plausibili è già un ottimo risultato.</p>
+    </div>
+
+    <button class="btn ghost" id="bRestart">↺ Rifai il questionario</button>
+
+    <div class="closing">
+      Strumento di orientamento a scopo riflessivo. Si basa sul modello di interessi
+      RIASEC (Holland), un framework consolidato nell'orientamento, ma non è un test
+      diagnostico né una previsione di carriera. Il suo scopo è aiutarti a porti le
+      domande giuste e a discuterne con chi può accompagnarti nella scelta.
+    </div>
+  `;
+  go('results');
+  setTimeout(()=>{
+    document.querySelectorAll('.pb-fill').forEach(b=>{
+      b.style.width = b.dataset.w + '%';
+    });
+  }, 200);
+  bindTap('bRestart', () => location.reload());
+}
+</script>
+</body>
+</html>
